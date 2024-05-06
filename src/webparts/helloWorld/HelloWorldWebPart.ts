@@ -1,5 +1,8 @@
 import {
 	Version,
+	DisplayMode,
+	Environment,
+	EnvironmentType,
 	IPropertyPaneConfiguration,
 	PropertyPaneTextField,
 	BaseClientSideWebPart,
@@ -8,7 +11,7 @@ import {
 	styles,
 	strings,
 } from './config';
-
+// プロパティを定義している(らしい)
 export interface IHelloWorldWebPartProps {
 	description: string;
 }
@@ -18,10 +21,20 @@ export default class HelloWorldWebPart extends BaseClientSideWebPart<IHelloWorld
 	private _environmentMessage: string = '';
 
 	public render(): void {
+		const pageMode: string =
+			this.displayMode === DisplayMode.Edit
+				? '編集中です。'
+				: '読取モードです。';
+		const environmentType: string =
+			Environment.type === EnvironmentType.ClassicSharePoint
+				? 'クラシックページです。'
+				: 'モダンページです。';
 		this.domElement.innerHTML = `
     <section class="${styles.helloWorld} ${
 			!!this.context.sdks.microsoftTeams ? styles.teams : ''
 		}">
+	  <div>Page mode: <strong>${escape(pageMode)}</strong></div>
+	  <div>Environment: <strong>${escape(environmentType)}</strong></div>
       <div class="${styles.welcome}">
         <img alt="" src="${
 					this._isDarkTheme
@@ -32,7 +45,7 @@ export default class HelloWorldWebPart extends BaseClientSideWebPart<IHelloWorld
 					this.context.pageContext.user.displayName
 				)}!</h2>
         <div>${this._environmentMessage}</div>
-        <div>Web part property value: <strong>${escape(
+        <div>Webパーツのプロパティから値を取得: <strong>${escape(
 					this.properties.description
 				)}</strong></div>
       </div>
@@ -41,26 +54,25 @@ export default class HelloWorldWebPart extends BaseClientSideWebPart<IHelloWorld
         <p>
         The SharePoint Framework (SPFx) is a extensibility model for Microsoft Viva, Microsoft Teams and SharePoint. It's the easiest way to extend Microsoft 365 with automatic Single Sign On, automatic hosting and industry standard tooling.
         </p>
-        <h4>Learn more about SPFx development:</h4>
-          <ul class="${styles.links}">
-            <li><a href="https://aka.ms/spfx" target="_blank">SharePoint Framework Overview</a></li>
-            <li><a href="https://aka.ms/spfx-yeoman-graph" target="_blank">Use Microsoft Graph in your solution</a></li>
-            <li><a href="https://aka.ms/spfx-yeoman-teams" target="_blank">Build for Microsoft Teams using SharePoint Framework</a></li>
-            <li><a href="https://aka.ms/spfx-yeoman-viva" target="_blank">Build for Microsoft Viva Connections using SharePoint Framework</a></li>
-            <li><a href="https://aka.ms/spfx-yeoman-store" target="_blank">Publish SharePoint Framework applications to the marketplace</a></li>
-            <li><a href="https://aka.ms/spfx-yeoman-api" target="_blank">SharePoint Framework API reference</a></li>
-            <li><a href="https://aka.ms/m365pnp" target="_blank">Microsoft 365 Developer Community</a></li>
-          </ul>
+		<button type="button">Show welcome message</button>
       </div>
     </section>`;
+		this.domElement
+			.getElementsByTagName('button')[0]
+			.addEventListener('click', (event: MouseEvent) => {
+				event.preventDefault();
+				alert('Welcome to the SharePoint Framework!');
+			});
 	}
 
 	protected onInit(): Promise<void> {
+		// onInitメソッドはWEBパーツ初期化時に読まれる
+		// 環境メッセージが読み出された後に環境メッセージを表示する。
 		return this._getEnvironmentMessage().then((message) => {
 			this._environmentMessage = message;
 		});
 	}
-
+	// 現在の実行環境に応じて適切な環境メッセージを取得する機能
 	private _getEnvironmentMessage(): Promise<string> {
 		if (!!this.context.sdks.microsoftTeams) {
 			// running in Teams, office.com or Outlook
@@ -99,7 +111,7 @@ export default class HelloWorldWebPart extends BaseClientSideWebPart<IHelloWorld
 				: strings.AppSharePointEnvironment
 		);
 	}
-
+	// テーマが変更されたときに呼び出されるハンドラーを提供する機能
 	protected onThemeChanged(currentTheme: IReadonlyTheme | undefined): void {
 		if (!currentTheme) {
 			return;
@@ -120,11 +132,11 @@ export default class HelloWorldWebPart extends BaseClientSideWebPart<IHelloWorld
 			);
 		}
 	}
-
+	// データのバージョンを管理する機能
 	protected get dataVersion(): Version {
 		return Version.parse('1.0');
 	}
-
+	// プロパティペインの構成を定義する機能
 	protected getPropertyPaneConfiguration(): IPropertyPaneConfiguration {
 		return {
 			pages: [
