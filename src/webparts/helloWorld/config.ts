@@ -4,6 +4,7 @@ import {
 	DisplayMode,
 	Environment,
 	EnvironmentType,
+	Log,
 } from '@microsoft/sp-core-library';
 // WEBパーツの外見や動作をカスタマイズする。
 import {
@@ -26,6 +27,8 @@ export {
 	DisplayMode,
 	Environment,
 	EnvironmentType,
+	// 開発者ダッシュボードに情報を表示する。
+	Log,
 	IPropertyPaneConfiguration,
 	PropertyPaneTextField,
 	BaseClientSideWebPart,
